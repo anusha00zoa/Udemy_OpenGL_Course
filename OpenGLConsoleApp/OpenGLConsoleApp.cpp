@@ -3,9 +3,17 @@
 #include <stdio.h>
 #include <string.h>
 #include <cmath>
+#include <iostream>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
 
 // WINDOW DIMENSIONS
 const GLint WIDTH = 800,	// WINDOW WIDTH
@@ -14,13 +22,20 @@ const GLint WIDTH = 800,	// WINDOW WIDTH
 GLuint	vao,				// VERTEX ARRAY OBJECT
 		vbo,				// VERTEX BUFFER OBJECT
 		shaderProgram,		// SHADER PROGRAM
-		uniformXMove;
+		uniformModel;
 
-bool	direction = true;
+bool	direction = true,
+		sizeDirection = true;
 
 float	triOffset = 0.0f,
 		triMaxOffset = 0.7f,
-		triIncrement = 0.0005f;
+		triIncrement = 0.005f,
+		curAngle = 0.0f,
+		curSize = 0.3f,
+		maxSize = 1.0f,
+		minSize = 0.1f;
+
+const float degreesToRadians = 3.141529265f / 180.0f;
 
 
 // VERTEX SHADER
@@ -29,10 +44,10 @@ static const char* vertexShader = "								\n\
 																\n\
 layout (location = 0) in vec3 pos;								\n\
 																\n\
-uniform float xMove;											\n\
+uniform mat4 model;												\n\
 																\n\
 void main() {													\n\
-	gl_Position = vec4(0.1 * pos.x + xMove, 0.1 * pos.y, pos.z, 1.0);		\n\
+	gl_Position = model * vec4(pos, 1.0);						\n\
 }";
 
 // FRAGMENT SHADER
@@ -106,7 +121,7 @@ void CompileShaders() {
 		return;
 	}
 
-	uniformXMove = glGetUniformLocation(shaderProgram, "xMove");
+	uniformModel = glGetUniformLocation(shaderProgram, "model");
 }
 
 void CreateTriangle() {
@@ -188,6 +203,7 @@ int main() {
 		// GET AND HANDLE USER INPUT EVENTS
 		glfwPollEvents();
 
+		// TRANSLATION
 		if (direction) {
 			triOffset += triIncrement;
 		}
@@ -199,6 +215,24 @@ int main() {
 			direction = !direction;
 		}
 
+		// ROTATION
+		curAngle += 0.1f;
+		if (curAngle >= 360) {
+			curAngle -= 360;
+		}
+
+		// SCALING
+		if (sizeDirection) {
+			curSize += 0.001f;
+		}
+		else {
+			curSize -= 0.001f;
+		}
+
+		if (curSize >= maxSize || curSize <= minSize) {
+			sizeDirection = !sizeDirection;
+		}
+
 		// CLEAR WINDOW
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -206,7 +240,19 @@ int main() {
 		// USE SHADER PROGRAM
 		glUseProgram(shaderProgram);
 
-		glUniform1f(uniformXMove, triOffset);
+		// INITIALIZE IDENTITY MATRIX
+		glm::mat4 modelMatrix = glm::mat4(1.0f);
+		// APPLY ROTATION
+		modelMatrix = glm::rotate(modelMatrix, curAngle * degreesToRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		// APPLY TRANSLATION
+		modelMatrix = glm::translate(modelMatrix, glm::vec3(triOffset, 0.0f, 0.0f));
+		// APPLY SCALING
+		modelMatrix = glm::scale(modelMatrix, glm::vec3(curSize, curSize, 1.0f));
+		
+		//// DEBUG PRINT glm::mat4
+		//std::cout << glm::to_string(modelMatrix) << std::endl;
+
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(modelMatrix));
 
 		glBindVertexArray(vao);
 		// CALL THE DRAW FUNCTION

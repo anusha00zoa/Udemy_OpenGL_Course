@@ -92,7 +92,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\..\External_Libs\GLEW\glew-2.1.0\include;$(SolutionDir)..\..\External_Libs\GLFW\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\..\External_Libs\GLEW\glew-2.1.0\include;$(SolutionDir)..\..\External_Libs\GLFW\include;$(Solutiondir)..\..\External_Libs\GLM;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -111,7 +111,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\..\External_Libs\GLEW\glew-2.1.0\include;$(SolutionDir)..\..\External_Libs\GLFW\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\..\External_Libs\GLEW\glew-2.1.0\include;$(SolutionDir)..\..\External_Libs\GLFW\include;$(Solutiondir)..\..\External_Libs\GLM;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -132,7 +132,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\..\External_Libs\GLEW\glew-2.1.0\include;$(SolutionDir)..\..\External_Libs\GLFW\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\..\External_Libs\GLEW\glew-2.1.0\include;$(SolutionDir)..\..\External_Libs\GLFW\include;$(Solutiondir)..\..\External_Libs\GLM;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -155,7 +155,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\..\External_Libs\GLEW\glew-2.1.0\include;$(SolutionDir)..\..\External_Libs\GLFW\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\..\External_Libs\GLEW\glew-2.1.0\include;$(SolutionDir)..\..\External_Libs\GLFW\include;$(Solutiondir)..\..\External_Libs\GLM;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
