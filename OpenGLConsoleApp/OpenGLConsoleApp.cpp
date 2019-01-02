@@ -1,12 +1,6 @@
 // OpenGLConsoleApp.cpp : This file contains the 'main' function. Program execution begins and ends there.
-
-#include <stdio.h>
-#include <string.h>
 #include <cmath>
-#include <iostream>
-
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
+#include <vector>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -15,16 +9,16 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 
-// WINDOW DIMENSIONS
-const GLint WIDTH = 800,	// WINDOW WIDTH
-			HEIGHT = 600;	// WINDOW HEIGHT
+#include "Mesh.h"
+#include "Shader.h"
+#include "MyWindow.h"
 
-GLuint	vao,				// VERTEX ARRAY OBJECT
-		vbo,				// VERTEX BUFFER OBJECT
-		ibo,				// INDEXED BUFFER OBJECT
-		shaderProgram,		// SHADER PROGRAM
-		uniformModel,		// MODEL MATRIX
-		uniformProjection;	// PROJECTION MATRIX
+const float degreesToRadians = 3.141529265f / 180.0f;
+
+MyWindow mainWindow;
+
+std::vector<Mesh*> meshList;
+std::vector<Shader*> shaderList;
 
 bool	direction = true,
 		sizeDirection = true;
@@ -37,100 +31,20 @@ float	triOffset = 0.0f,
 		maxSize = 1.0f,
 		minSize = 0.1f;
 
-const float degreesToRadians = 3.141529265f / 180.0f;
-
 
 // VERTEX SHADER
-static const char* vertexShader = "								\n\
-#version 330													\n\
-layout (location = 0) in vec3 pos;								\n\
-																\n\
-uniform mat4 model;												\n\
-uniform mat4 projection;										\n\
-out vec4 vertexColor;											\n\
-																\n\
-void main() {													\n\
-	gl_Position = projection * model * vec4(pos, 1.0);			\n\
-	vertexColor = vec4(clamp(pos, 0.0f, 1.0f), 1.0);			\n\
-}";
+static const char* vertexShader = "Shaders/vs.vert";
 
 // FRAGMENT SHADER
-static const char* fragmentShader = "		\n\
-#version 330								\n\
-											\n\
-in vec4 vertexColor;						\n\
-out vec4 color;								\n\
-											\n\
-void main() {								\n\
-	color = vertexColor;					\n\
-}";
+static const char* fragmentShader = "Shaders/fs.frag";
 
-void AddShader(GLuint program, const char* shaderCode, GLenum shaderType) {
-	// CREATE SHADER, GIVEN SHADER TYPE
-	GLuint shdr = glCreateShader(shaderType);
-
-	const GLchar* code[1];
-	code[0] = shaderCode;
-	GLint codeLength[1];
-	codeLength[0] = strlen(shaderCode);
-
-	// ASSIGN SHADER CODE SOURCE AND COMPILE SHADER
-	glShaderSource(shdr, 1, code, codeLength);
-	glCompileShader(shdr);
-
-	// GET COMPILE STATUS AND PRINT ERRORS IF ANY
-	GLint result = 0;
-	GLchar eLog[1024] = { 0 };
-	glGetShaderiv(shdr, GL_COMPILE_STATUS, &result);
-	if (!result) {
-		glGetProgramInfoLog(shdr, 1024, NULL, eLog);
-		printf("Error compiling %d shader: '%s'\n", shaderType, eLog);
-		return;
-	}
-
-	// ATTACH COMPILED SHADER TO THE GIVEN SHADER PROGRAM
-	glAttachShader(program, shdr);
-
-	return;
-};
-
-void CompileShaders() {
-	// CREATE SHADER PROGRAM
-	shaderProgram = glCreateProgram();
-	if (!shaderProgram) {
-		printf("Error creating shader program!");
-		return;
-	}
-
-	// ADD VERTEX SHADER AND FRAGMENT SHADER TO THE PROGRAM
-	AddShader(shaderProgram, vertexShader, GL_VERTEX_SHADER);
-	AddShader(shaderProgram, fragmentShader, GL_FRAGMENT_SHADER);
-
-	// LINK SHADER PROGRAM, GET LINK STATUS AND PRINT ERRORS IF ANY
-	GLint result = 0;
-	GLchar eLog[1024] = { 0 };
-	glLinkProgram(shaderProgram);
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &result);
-	if (!result) {
-		glGetProgramInfoLog(shaderProgram, sizeof(eLog), NULL, eLog);
-		printf("Error linking program: '%s'\n", eLog);
-		return;
-	}
-
-	// VALIDATE SHADER PROGRAM, GET VALIDATION STATUS AND PRINT ERRORS IF ANY
-	glValidateProgram(shaderProgram);
-	glGetProgramiv(shaderProgram, GL_VALIDATE_STATUS, &result);
-	if (!result) {
-		glGetProgramInfoLog(shaderProgram, sizeof(eLog), NULL, eLog);
-		printf("Error validating program: '%s'\n", eLog);
-		return;
-	}
-
-	uniformModel = glGetUniformLocation(shaderProgram, "model");
-	uniformProjection = glGetUniformLocation(shaderProgram, "projection");
+void CreateShaders() {
+	Shader *shader1 = new Shader();
+	shader1->CreateFromFiles(vertexShader, fragmentShader);
+	shaderList.push_back(shader1);
 }
 
-void CreateTriangle() {
+void CreateObjects() {
 	// DEFINE VERTICES FOR OBJECT TO BE DRAWN
 	
 	// USE THESE VERTICES TO DRAW A FULL SPECTRUM COLORED TRIANGLE
@@ -155,91 +69,32 @@ void CreateTriangle() {
 		0, 1, 2
 	};
 
-	// GENERATE AND BIND VERTEX ARRAY OBJECT
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-	
-	// GENERATE AND BIND INDEXED BUFFER OBJECT
-	glGenBuffers(1, &ibo);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-	// DEFINE IBO BUFFER DATA
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-	
-	// GENERATE AND BIND VERTEX BUFFER OBJECT
-	glGenBuffers(1, &vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	// DEFINE VBO BUFFER DATA
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	
-	// DEFINE ATTRIBUTE POINTER
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(0);
-	
-	// UNBIND VERTEX ARRAY OBJECT AND VERTEX BUFFER OBJECT 
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-	// UNBIND INDEXED BUFFER OBJECT AFTER UNBINDING VAO
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	Mesh *obj1 = new Mesh();
+	obj1->CreateMesh(vertices, indices, 12, 12);
+	meshList.push_back(obj1);
+
+	Mesh *obj2 = new Mesh();
+	obj2->CreateMesh(vertices, indices, 12, 12);
+	meshList.push_back(obj2);
 }
 
 int main() {
-    // INITIALIZE GLFW
-	if (!glfwInit()) {
-		printf("GLFW Initialization failed!");
-		glfwTerminate();
-		return 1;
-	}
+	// CREATE WINDOW
+	mainWindow = MyWindow(800, 600);
+	mainWindow.Initialize();
 
-	// // SETUP GLFW WINDOW PROPERTIES
-	// OPENGL VERSION
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	// CORE PROFILE = NO BACKWARDS COMPATIBILITY
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	// ALLOW FORWARD COMPATIBILITY
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-
-	GLFWwindow *mainWindow = glfwCreateWindow(WIDTH, HEIGHT, "OpenGLConsoleAppWindow", NULL, NULL);
-	if (!mainWindow) {
-		printf("GLFW window creation failed!");
-		glfwTerminate();
-		return 1;
-	}
-
-	// GET BUFFER SIZE INFORMATION
-	int bufferWidth, bufferHeight;
-	glfwGetFramebufferSize(mainWindow, &bufferWidth, &bufferHeight);
-
-	// SET CONTEXT FOR GLEW TO USE
-	glfwMakeContextCurrent(mainWindow);
-
-	// ALLOW MODERN EXTENSION FEATURES
-	glewExperimental = GL_TRUE;
-
-	// INITIALIZE GLEW
-	if (glewInit() != GLEW_OK) {
-		printf("GLEW Initialization failed!");
-		glfwDestroyWindow(mainWindow);
-		glfwTerminate();
-		return 1;
-	}
-
-	// ENABLE DEPTH BUFFER
-	glEnable(GL_DEPTH_TEST);
-
-	// SETUP VIEWPORT SIZE
-	glViewport(0, 0, bufferWidth, bufferHeight);
-
-	// CALL FUNCTION TO CREATE TRIANGLE DATA
-	CreateTriangle();
+	// CALL FUNCTION TO CREATE OBJECT DATA
+	CreateObjects();
+	
 	// ADD AND COMPILE SHADERS AND SHADER PROGRAM
-	CompileShaders();
+	CreateShaders();
 
-	// CALCULATE ONCE AND REUSE IN THE APPLICATION
-	glm::mat4 projectionMatrix = glm::perspective(45.0f, (GLfloat)bufferWidth / (GLfloat)bufferHeight, 0.1f, 100.0f);
+	// CALCULATE PROJECTION MATRIX ONCE AND REUSE IN THE APPLICATION
+	glm::mat4 projectionMatrix = glm::perspective(45.0f, mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 100.0f);
 
+	GLuint uniformModel = 0, uniformProjection = 0;
 	// LOOP UNTIL WINDOW CLOSES
-	while (!glfwWindowShouldClose(mainWindow)) {
+	while (!mainWindow.GetShouldClose()) {
 		// GET AND HANDLE USER INPUT EVENTS
 		glfwPollEvents();
 
@@ -278,8 +133,11 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// USE SHADER PROGRAM
-		glUseProgram(shaderProgram);
+		shaderList[0]->UseShader();
+		uniformModel = shaderList[0]->GetModelLocation();
+		uniformProjection = shaderList[0]->GetProjectionLocation();
 
+		// BEGIN OBJECT 1 SECTION
 		// INITIALIZE IDENTITY MATRIX
 		glm::mat4 modelMatrix = glm::mat4(1.0f);
 		// APPLY TRANSLATION
@@ -288,33 +146,38 @@ int main() {
 		modelMatrix = glm::rotate(modelMatrix, curAngle * degreesToRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		//// APPLY TRANSLATION
 		//modelMatrix = glm::translate(modelMatrix, glm::vec3(triOffset, 0.0f, 0.0f));
-		//// APPLY SCALING
-		//modelMatrix = glm::scale(modelMatrix, glm::vec3(curSize, curSize, 1.0f));
+		// APPLY SCALING
+		modelMatrix = glm::scale(modelMatrix, glm::vec3(curSize, curSize, 1.0f));
 		
 		//// DEBUG PRINT glm::mat4
 		//std::cout << glm::to_string(modelMatrix) << std::endl;
 
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+
+		meshList[0]->RenderMesh();
+		// END OBJECT 1 SECTION
+		
+		// BEGIN OBJECT 2 SECTION
+		// INITIALIZE IDENTITY MATRIX
+		modelMatrix = glm::mat4(1.0f);
+		// APPLY TRANSLATION
+		modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 1.0f, -5.0f));
+		// APPLY ROTATION
+		modelMatrix = glm::rotate(modelMatrix, curAngle * degreesToRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		// APPLY SCALING
+		modelMatrix = glm::scale(modelMatrix, glm::vec3(curSize, curSize, 1.0f));
 
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(modelMatrix));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 
+		meshList[1]->RenderMesh();
+		// END OBJECT 2 SECTION
 
-		glBindVertexArray(vao);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-		
-		// CALL THE DRAW FUNCTION
-		//// BASIC DRAW CALL
-		//glDrawArrays(GL_TRIANGLES, 0, 3);
-		// INDEXED DRAW CALL
-		glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
-		
-		// UNBIND 
-		glBindVertexArray(0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		glUseProgram(0);
 
 		// SWAP FRAMEBUFFER TO BE DRAWN
-		glfwSwapBuffers(mainWindow);
+		mainWindow.SwapBuffers();
 	}
 
 	return 0;
