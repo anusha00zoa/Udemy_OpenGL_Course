@@ -21,8 +21,10 @@ const GLint WIDTH = 800,	// WINDOW WIDTH
 
 GLuint	vao,				// VERTEX ARRAY OBJECT
 		vbo,				// VERTEX BUFFER OBJECT
+		ibo,				// INDEXED BUFFER OBJECT
 		shaderProgram,		// SHADER PROGRAM
-		uniformModel;
+		uniformModel,		// MODEL MATRIX
+		uniformProjection;	// PROJECTION MATRIX
 
 bool	direction = true,
 		sizeDirection = true;
@@ -41,23 +43,26 @@ const float degreesToRadians = 3.141529265f / 180.0f;
 // VERTEX SHADER
 static const char* vertexShader = "								\n\
 #version 330													\n\
-																\n\
 layout (location = 0) in vec3 pos;								\n\
 																\n\
 uniform mat4 model;												\n\
+uniform mat4 projection;										\n\
+out vec4 vertexColor;											\n\
 																\n\
 void main() {													\n\
-	gl_Position = model * vec4(pos, 1.0);						\n\
+	gl_Position = projection * model * vec4(pos, 1.0);			\n\
+	vertexColor = vec4(clamp(pos, 0.0f, 1.0f), 1.0);			\n\
 }";
 
 // FRAGMENT SHADER
-static const char* fragmentShader = "	\n\
-#version 330							\n\
-										\n\
-out vec4 color;							\n\
-										\n\
-void main() {							\n\
-	color = vec4(1.0, 0.0, 0.0, 1.0);	\n\
+static const char* fragmentShader = "		\n\
+#version 330								\n\
+											\n\
+in vec4 vertexColor;						\n\
+out vec4 color;								\n\
+											\n\
+void main() {								\n\
+	color = vertexColor;					\n\
 }";
 
 void AddShader(GLuint program, const char* shaderCode, GLenum shaderType) {
@@ -122,30 +127,59 @@ void CompileShaders() {
 	}
 
 	uniformModel = glGetUniformLocation(shaderProgram, "model");
+	uniformProjection = glGetUniformLocation(shaderProgram, "projection");
 }
 
 void CreateTriangle() {
 	// DEFINE VERTICES FOR OBJECT TO BE DRAWN
+	
+	// USE THESE VERTICES TO DRAW A FULL SPECTRUM COLORED TRIANGLE
+	/*GLfloat vertices[] = {
+		1.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 1.0f
+	};*/ 
+
 	GLfloat vertices[] = {
-		-1.0f, -1.0f, 0.0f,
-		1.0f, -1.0f, 0.0f,
-		0.0f, 1.0f, 0.0f
+		-1.0f, -1.0f, 0.0f,		// 0
+		0.0f, -1.0f, 1.0f,		// 1
+		1.0f, -1.0f, 0.0f,		// 2
+		0.0f, 1.0f, 0.0f		// 3
+	};
+
+	// FOR INDEXED DRAW
+	unsigned int indices[] = {
+		0, 3, 1,
+		1, 3, 2,
+		2, 3, 0,
+		0, 1, 2
 	};
 
 	// GENERATE AND BIND VERTEX ARRAY OBJECT
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
+	
+	// GENERATE AND BIND INDEXED BUFFER OBJECT
+	glGenBuffers(1, &ibo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+	// DEFINE IBO BUFFER DATA
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	
 	// GENERATE AND BIND VERTEX BUFFER OBJECT
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	// DEFINE BUFFER DATA
+	// DEFINE VBO BUFFER DATA
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	
 	// DEFINE ATTRIBUTE POINTER
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(0);
+	
 	// UNBIND VERTEX ARRAY OBJECT AND VERTEX BUFFER OBJECT 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
+	// UNBIND INDEXED BUFFER OBJECT AFTER UNBINDING VAO
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 int main() {
@@ -190,6 +224,9 @@ int main() {
 		return 1;
 	}
 
+	// ENABLE DEPTH BUFFER
+	glEnable(GL_DEPTH_TEST);
+
 	// SETUP VIEWPORT SIZE
 	glViewport(0, 0, bufferWidth, bufferHeight);
 
@@ -197,6 +234,9 @@ int main() {
 	CreateTriangle();
 	// ADD AND COMPILE SHADERS AND SHADER PROGRAM
 	CompileShaders();
+
+	// CALCULATE ONCE AND REUSE IN THE APPLICATION
+	glm::mat4 projectionMatrix = glm::perspective(45.0f, (GLfloat)bufferWidth / (GLfloat)bufferHeight, 0.1f, 100.0f);
 
 	// LOOP UNTIL WINDOW CLOSES
 	while (!glfwWindowShouldClose(mainWindow)) {
@@ -235,30 +275,42 @@ int main() {
 
 		// CLEAR WINDOW
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// USE SHADER PROGRAM
 		glUseProgram(shaderProgram);
 
 		// INITIALIZE IDENTITY MATRIX
 		glm::mat4 modelMatrix = glm::mat4(1.0f);
-		// APPLY ROTATION
-		modelMatrix = glm::rotate(modelMatrix, curAngle * degreesToRadians, glm::vec3(0.0f, 0.0f, 1.0f));
 		// APPLY TRANSLATION
-		modelMatrix = glm::translate(modelMatrix, glm::vec3(triOffset, 0.0f, 0.0f));
-		// APPLY SCALING
-		modelMatrix = glm::scale(modelMatrix, glm::vec3(curSize, curSize, 1.0f));
+		modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, -5.0f));
+		// APPLY ROTATION
+		modelMatrix = glm::rotate(modelMatrix, curAngle * degreesToRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		//// APPLY TRANSLATION
+		//modelMatrix = glm::translate(modelMatrix, glm::vec3(triOffset, 0.0f, 0.0f));
+		//// APPLY SCALING
+		//modelMatrix = glm::scale(modelMatrix, glm::vec3(curSize, curSize, 1.0f));
 		
 		//// DEBUG PRINT glm::mat4
 		//std::cout << glm::to_string(modelMatrix) << std::endl;
 
+
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+
 
 		glBindVertexArray(vao);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+		
 		// CALL THE DRAW FUNCTION
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		//// BASIC DRAW CALL
+		//glDrawArrays(GL_TRIANGLES, 0, 3);
+		// INDEXED DRAW CALL
+		glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
+		
 		// UNBIND 
 		glBindVertexArray(0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		glUseProgram(0);
 
 		// SWAP FRAMEBUFFER TO BE DRAWN
