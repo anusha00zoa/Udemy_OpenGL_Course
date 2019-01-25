@@ -16,6 +16,10 @@ public:
 	// GETTER FUNCTIONS
 	GLfloat getBufferWidth() { return (GLfloat)bufferWidth;  }
 	GLfloat getBufferHeight() { return (GLfloat)bufferHeight;  }
+	bool* getKeys() { return keys; }
+	GLfloat getXChange();
+	GLfloat getYChange();
+
 
 	bool GetShouldClose() { return glfwWindowShouldClose(mainWindow);  }
 
@@ -26,7 +30,25 @@ public:
 private:
 	GLFWwindow *mainWindow;
 
-	GLint width, height;
-	GLint bufferWidth, bufferHeight;
+	GLint width, 
+		height, 
+		bufferWidth, 
+		bufferHeight;
+
+	void CreateCallbacks();
+
+	// HANDLE KEYBOARD INPUT
+	bool keys[1024];	// TO STORE STATE OF ALL ASCII CHARACTERS
+	static void HandleKeys(GLFWwindow *window, int key, int code, int action, int mode);
+
+	// HANDLE MOUSE INPUT
+	GLfloat lastX,
+		lastY,
+		xChange,
+		yChange;
+	bool mouseFirstMoved;
+	static void HandleMouse(GLFWwindow *window, double xPos, double yPos);
+
+
 };
 

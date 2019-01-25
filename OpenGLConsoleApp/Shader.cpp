@@ -4,6 +4,7 @@
 Shader::Shader() {
 	shaderID = 0;
 	uniformModel = 0;
+	uniformView = 0;
 	uniformProjection = 0;
 }
 
@@ -14,6 +15,10 @@ GLuint Shader::GetProjectionLocation() {
 
 GLuint Shader::GetModelLocation() {
 	return uniformModel;
+}
+
+GLuint Shader::GetViewLocation() {
+	return uniformView;
 }
 
 
@@ -114,7 +119,9 @@ void Shader::CompileShader(const char *vertexCode, const char *fragmentCode) {
 
 	uniformModel = glGetUniformLocation(shaderID, "model");
 	uniformProjection = glGetUniformLocation(shaderID, "projection");
+	uniformView = glGetUniformLocation(shaderID, "view");
 }
+
 
 void Shader::UseShader() {
 	glUseProgram(shaderID);
@@ -128,6 +135,7 @@ void Shader::ClearShader() {
 
 	uniformModel = 0;
 	uniformProjection = 0;
+	uniformView = 0;
 }
 
 // DESTRUCTOR

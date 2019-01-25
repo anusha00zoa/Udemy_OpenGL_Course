@@ -1,4 +1,6 @@
 // OpenGLConsoleApp.cpp : This file contains the 'main' function. Program execution begins and ends there.
+#define STB_IMAGE_IMPLEMENTATION
+
 #include <cmath>
 #include <vector>
 
@@ -12,6 +14,8 @@
 #include "Mesh.h"
 #include "Shader.h"
 #include "MyWindow.h"
+#include "Camera.h"
+#include "Texture.h"
 
 const float degreesToRadians = 3.141529265f / 180.0f;
 
@@ -20,16 +24,24 @@ MyWindow mainWindow;
 std::vector<Mesh*> meshList;
 std::vector<Shader*> shaderList;
 
+Camera camera;
+
+Texture brickTexture, 
+        dirtTexture;
+
+GLfloat deltaTime = 0.0f,
+		    lastTime = 0.0f;
+
 bool	direction = true,
-		sizeDirection = true;
+		  sizeDirection = true;
 
 float	triOffset = 0.0f,
-		triMaxOffset = 0.7f,
-		triIncrement = 0.005f,
-		curAngle = 0.0f,
-		curSize = 0.3f,
-		maxSize = 1.0f,
-		minSize = 0.1f;
+		  triMaxOffset = 0.7f,
+		  triIncrement = 0.005f,
+		  curAngle = 0.0f,
+		  curSize = 0.3f,
+		  maxSize = 1.0f,
+		  minSize = 0.1f;
 
 
 // VERTEX SHADER
@@ -55,10 +67,13 @@ void CreateObjects() {
 	};*/ 
 
 	GLfloat vertices[] = {
-		-1.0f, -1.0f, 0.0f,		// 0
-		0.0f, -1.0f, 1.0f,		// 1
-		1.0f, -1.0f, 0.0f,		// 2
-		0.0f, 1.0f, 0.0f		// 3
+    // x, y, z - VERTEX COORDINATES
+    // u, v -  TEXTURE COORDINATES
+    // LINE FORMAT: x, y, z, u, v 
+		-1.0f,  -1.0f,  0.0f,     0.0f, 0.0f,		// 0
+		0.0f,   -1.0f,  1.0f,     0.5f, 0.0f,		// 1
+		1.0f,   -1.0f,  0.0f,     1.0f, 0.0f,		// 2
+		0.0f,   1.0f,   0.0f,     0.5f, 1.0f	  // 3
 	};
 
 	// FOR INDEXED DRAW
@@ -70,11 +85,11 @@ void CreateObjects() {
 	};
 
 	Mesh *obj1 = new Mesh();
-	obj1->CreateMesh(vertices, indices, 12, 12);
+	obj1->CreateMesh(vertices, indices, 20, 12);
 	meshList.push_back(obj1);
 
 	Mesh *obj2 = new Mesh();
-	obj2->CreateMesh(vertices, indices, 12, 12);
+	obj2->CreateMesh(vertices, indices, 20, 12);
 	meshList.push_back(obj2);
 }
 
@@ -89,44 +104,61 @@ int main() {
 	// ADD AND COMPILE SHADERS AND SHADER PROGRAM
 	CreateShaders();
 
+	// INITIALIZE CAMERA
+	camera = Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 5.0f, 0.5f);
+
+  // INITIALIZE TEXTURES - PASS TEXTURE LOCATIONS AND LOAD TEXTURES
+  brickTexture = Texture((char*)"Textures/brick.png");
+  brickTexture.LoadTexture();
+  dirtTexture = Texture((char*)"Textures/dirt.png");
+  dirtTexture.LoadTexture();
+
 	// CALCULATE PROJECTION MATRIX ONCE AND REUSE IN THE APPLICATION
 	glm::mat4 projectionMatrix = glm::perspective(45.0f, mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 100.0f);
 
-	GLuint uniformModel = 0, uniformProjection = 0;
+	GLuint uniformModel = 0, uniformProjection = 0, uniformView = 0;
 	// LOOP UNTIL WINDOW CLOSES
 	while (!mainWindow.GetShouldClose()) {
+		// CALCULATE DELTA TIME
+		GLfloat now = glfwGetTime();
+		deltaTime = now - lastTime;
+		lastTime = now;
+
 		// GET AND HANDLE USER INPUT EVENTS
 		glfwPollEvents();
 
-		// TRANSLATION
-		if (direction) {
-			triOffset += triIncrement;
-		}
-		else {
-			triOffset -= triIncrement;
-		}
+		camera.KeyControl(mainWindow.getKeys(), deltaTime);
+		camera.MouseControl(mainWindow.getXChange(), mainWindow.getYChange());
 
-		if (abs(triOffset) >= triMaxOffset) {
-			direction = !direction;
-		}
+		//// TRANSLATION
+		//if (direction) {
+		//	triOffset += triIncrement;
+		//}
+		//else {
+		//	triOffset -= triIncrement;
+		//}
 
-		// ROTATION
-		curAngle += 0.1f;
-		if (curAngle >= 360) {
-			curAngle -= 360;
-		}
+		//if (abs(triOffset) >= triMaxOffset) {
+		//	direction = !direction;
+		//}
 
-		// SCALING
-		if (sizeDirection) {
-			curSize += 0.001f;
-		}
-		else {
-			curSize -= 0.001f;
-		}
+		//// ROTATION
+		//curAngle += 0.1f;
+		//if (curAngle >= 360) {
+		//	curAngle -= 360;
+		//}
 
-		if (curSize >= maxSize || curSize <= minSize) {
-			sizeDirection = !sizeDirection;
-		}
+		//// SCALING
+		//if (sizeDirection) {
+		//	curSize += 0.001f;
+		//}
+		//else {
+		//	curSize -= 0.001f;
+		//}
+
+		//if (curSize >= maxSize || curSize <= minSize) {
+		//	sizeDirection = !sizeDirection;
+		//}
 
 		// CLEAR WINDOW
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -136,41 +168,43 @@ int main() {
 		shaderList[0]->UseShader();
 		uniformModel = shaderList[0]->GetModelLocation();
 		uniformProjection = shaderList[0]->GetProjectionLocation();
+		uniformView = shaderList[0]->GetViewLocation();
 
 		// BEGIN OBJECT 1 SECTION
 		// INITIALIZE IDENTITY MATRIX
 		glm::mat4 modelMatrix = glm::mat4(1.0f);
-		// APPLY TRANSLATION
-		modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, -5.0f));
-		// APPLY ROTATION
-		modelMatrix = glm::rotate(modelMatrix, curAngle * degreesToRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		//// APPLY TRANSLATION
-		//modelMatrix = glm::translate(modelMatrix, glm::vec3(triOffset, 0.0f, 0.0f));
-		// APPLY SCALING
-		modelMatrix = glm::scale(modelMatrix, glm::vec3(curSize, curSize, 1.0f));
+		//modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, -5.0f));
+		//// APPLY ROTATION
+		//modelMatrix = glm::rotate(modelMatrix, curAngle * degreesToRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		////// APPLY TRANSLATION
+		////modelMatrix = glm::translate(modelMatrix, glm::vec3(triOffset, 0.0f, 0.0f));
+		//// APPLY SCALING
+		//modelMatrix = glm::scale(modelMatrix, glm::vec3(curSize, curSize, 1.0f));
 		
 		//// DEBUG PRINT glm::mat4
 		//std::cout << glm::to_string(modelMatrix) << std::endl;
 
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(modelMatrix));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-
+		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.CalculateViewMatrix()));
+    brickTexture.UseTexture();
 		meshList[0]->RenderMesh();
 		// END OBJECT 1 SECTION
 		
 		// BEGIN OBJECT 2 SECTION
 		// INITIALIZE IDENTITY MATRIX
 		modelMatrix = glm::mat4(1.0f);
-		// APPLY TRANSLATION
-		modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 1.0f, -5.0f));
-		// APPLY ROTATION
-		modelMatrix = glm::rotate(modelMatrix, curAngle * degreesToRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		//// APPLY TRANSLATION
+		//modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 1.0f, -5.0f));
+		//// APPLY ROTATION
+		//modelMatrix = glm::rotate(modelMatrix, curAngle * degreesToRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		// APPLY SCALING
 		modelMatrix = glm::scale(modelMatrix, glm::vec3(curSize, curSize, 1.0f));
 
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(modelMatrix));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-
+    dirtTexture.UseTexture();
 		meshList[1]->RenderMesh();
 		// END OBJECT 2 SECTION
 
