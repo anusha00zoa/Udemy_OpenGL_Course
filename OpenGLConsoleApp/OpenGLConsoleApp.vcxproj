@@ -92,7 +92,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\..\External_Libs\GLEW\glew-2.1.0\include;$(SolutionDir)..\..\External_Libs\GLFW\include;$(Solutiondir)..\..\External_Libs\GLM;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\..\External_Libs\GLEW\glew-2.1.0\include;$(SolutionDir)..\..\External_Libs\GLFW\include;$(SolutionDir)..\..\External_Libs\GLM;$(SolutionDir)OpenGLConsoleApp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -111,7 +111,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\..\External_Libs\GLEW\glew-2.1.0\include;$(SolutionDir)..\..\External_Libs\GLFW\include;$(Solutiondir)..\..\External_Libs\GLM;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\..\External_Libs\GLEW\glew-2.1.0\include;$(SolutionDir)..\..\External_Libs\GLFW\include;$(SolutionDir)..\..\External_Libs\GLM;$(SolutionDir)OpenGLConsoleApp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -132,7 +132,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\..\External_Libs\GLEW\glew-2.1.0\include;$(SolutionDir)..\..\External_Libs\GLFW\include;$(Solutiondir)..\..\External_Libs\GLM;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\..\External_Libs\GLEW\glew-2.1.0\include;$(SolutionDir)..\..\External_Libs\GLFW\include;$(SolutionDir)..\..\External_Libs\GLM;$(SolutionDir)OpenGLConsoleApp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -155,7 +155,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\..\External_Libs\GLEW\glew-2.1.0\include;$(SolutionDir)..\..\External_Libs\GLFW\include;$(Solutiondir)..\..\External_Libs\GLM;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\..\External_Libs\GLEW\glew-2.1.0\include;$(SolutionDir)..\..\External_Libs\GLFW\include;$(SolutionDir)..\..\External_Libs\GLM;$(SolutionDir)OpenGLConsoleApp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -175,11 +175,11 @@
     <ClCompile Include="Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Camera.h" />
-    <ClInclude Include="Mesh.h" />
-    <ClInclude Include="MyWindow.h" />
-    <ClInclude Include="Shader.h" />
-    <ClInclude Include="Texture.h" />
+    <ClInclude Include="include/Camera.h" />
+    <ClInclude Include="include/Mesh.h" />
+    <ClInclude Include="include/MyWindow.h" />
+    <ClInclude Include="include/Shader.h" />
+    <ClInclude Include="include/Texture.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

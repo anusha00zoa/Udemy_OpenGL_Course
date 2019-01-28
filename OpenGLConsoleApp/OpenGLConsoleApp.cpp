@@ -27,21 +27,21 @@ std::vector<Shader*> shaderList;
 Camera camera;
 
 Texture brickTexture, 
-        dirtTexture;
+		dirtTexture;
 
 GLfloat deltaTime = 0.0f,
-		    lastTime = 0.0f;
+		lastTime = 0.0f;
 
 bool	direction = true,
-		  sizeDirection = true;
+		sizeDirection = true;
 
 float	triOffset = 0.0f,
-		  triMaxOffset = 0.7f,
-		  triIncrement = 0.005f,
-		  curAngle = 0.0f,
-		  curSize = 0.3f,
-		  maxSize = 1.0f,
-		  minSize = 0.1f;
+		triMaxOffset = 0.7f,
+		triIncrement = 0.005f,
+		curAngle = 0.0f,
+		curSize = 0.3f,
+		maxSize = 1.0f,
+		minSize = 0.1f;
 
 
 // VERTEX SHADER
