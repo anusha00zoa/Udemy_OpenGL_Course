@@ -1,6 +1,5 @@
 #include "MyWindow.h"
 
-
 // CONSTRUCTORS
 MyWindow::MyWindow() {
 	width = 800;
@@ -32,21 +31,17 @@ GLfloat MyWindow::getYChange() {
 
 
 int MyWindow::Initialize() {
-	// INITIALIZE GLFW
-	if (!glfwInit()) {
+	if (!glfwInit()) {                                                                      	// INITIALIZE GLFW
 		printf("GLFW Initialization failed!");
 		glfwTerminate();
 		return 1;
 	}
 
 	// // SETUP GLFW WINDOW PROPERTIES
-	// OPENGL VERSION
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);                                           	// OPENGL VERSION
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	// CORE PROFILE = NO BACKWARDS COMPATIBILITY
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	// ALLOW FORWARD COMPATIBILITY
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);                          	// CORE PROFILE = NO BACKWARDS COMPATIBILITY
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);                                    	// ALLOW FORWARD COMPATIBILITY
 
 	mainWindow = glfwCreateWindow(width, height, "OpenGLConsoleAppWindow", NULL, NULL);
 	if (!mainWindow) {
@@ -55,37 +50,24 @@ int MyWindow::Initialize() {
 		return 1;
 	}
 
-	// GET BUFFER SIZE INFORMATION
-	glfwGetFramebufferSize(mainWindow, &bufferWidth, &bufferHeight);
+	glfwGetFramebufferSize(mainWindow, &bufferWidth, &bufferHeight);                        	// GET BUFFER SIZE INFORMATION
+	glfwMakeContextCurrent(mainWindow);                                                     	// SET CONTEXT FOR GLEW TO USE
 
-	// SET CONTEXT FOR GLEW TO USE
-	glfwMakeContextCurrent(mainWindow);
+	CreateCallbacks();                                                                       	// HANDLE KEY + MOUSE INPUT
 
-	// HANDLE KEY + MOUSE INPUT
-	CreateCallbacks();
+	glfwSetInputMode(mainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);                        	// TO HIDE THE CURSOR IN THE WINDOW
+	glewExperimental = GL_TRUE;                                                             	// ALLOW MODERN EXTENSION FEATURES
 
-	// TO HIDE THE CURSOR IN THE WINDOW
-	glfwSetInputMode(mainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-	// ALLOW MODERN EXTENSION FEATURES
-	glewExperimental = GL_TRUE;
-
-	// INITIALIZE GLEW
-	if (glewInit() != GLEW_OK) {
+	if (glewInit() != GLEW_OK) {                                                            	// INITIALIZE GLEW
 		printf("GLEW Initialization failed!");
 		glfwDestroyWindow(mainWindow);
 		glfwTerminate();
 		return 1;
 	}
 
-	// ENABLE DEPTH BUFFER
-	glEnable(GL_DEPTH_TEST);
-
-	// SETUP VIEWPORT SIZE
-	glViewport(0, 0, bufferWidth, bufferHeight);
-
-	// SET USER OF THIS WINDOW
-	glfwSetWindowUserPointer(mainWindow, this);
+	glEnable(GL_DEPTH_TEST);                                                                	// ENABLE DEPTH BUFFER
+	glViewport(0, 0, bufferWidth, bufferHeight);                                            	// SETUP VIEWPORT SIZE
+	glfwSetWindowUserPointer(mainWindow, this);                                             	// SET USER OF THIS WINDOW
 
 	return 0;
 }
@@ -125,7 +107,7 @@ void MyWindow::HandleMouse(GLFWwindow *window, double xPos, double yPos) {
 	}
 
 	theWindow->xChange = xPos - theWindow->lastX;
-	theWindow->yChange = theWindow->lastY - yPos;	// TO MATCH THE Y DIRECTION OF THE COORDINATE SYSTEM 
+	theWindow->yChange = theWindow->lastY - yPos;	                                          // TO MATCH THE Y DIRECTION OF THE COORDINATE SYSTEM 
 
 	theWindow->lastX = xPos;
 	theWindow->lastY = yPos;

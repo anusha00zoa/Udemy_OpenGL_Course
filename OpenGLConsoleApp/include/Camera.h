@@ -20,7 +20,7 @@ public:
 	~Camera();
 
 private:
-	// CAMERA POSITION AND DIRECTION VECTORS
+	// // CAMERA POSITION AND DIRECTION VECTORS
 	glm::vec3 position, front, up, right, worldUp;
 
 	GLfloat yaw, pitch, roll;

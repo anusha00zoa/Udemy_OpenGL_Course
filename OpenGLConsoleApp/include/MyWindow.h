@@ -37,11 +37,11 @@ private:
 
 	void CreateCallbacks();
 
-	// HANDLE KEYBOARD INPUT
-	bool keys[1024];	// TO STORE STATE OF ALL ASCII CHARACTERS
+	// // HANDLE KEYBOARD INPUT
+	bool keys[1024];	                                                                    // TO STORE STATE OF ALL ASCII CHARACTERS
 	static void HandleKeys(GLFWwindow *window, int key, int code, int action, int mode);
 
-	// HANDLE MOUSE INPUT
+	// // HANDLE MOUSE INPUT
 	GLfloat lastX,
 		lastY,
 		xChange,

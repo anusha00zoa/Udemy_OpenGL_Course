@@ -6,30 +6,27 @@ Shader::Shader() {
 	uniformModel = 0;
 	uniformView = 0;
 	uniformProjection = 0;
+
   uniformAmbientColor = 0;
   uniformAmbientIntensity = 0;
+  uniformDirection = 0;
+  uniformDiffuseIntensity = 0;
 }
 
 // GETTER FUNCTIONS
-GLuint Shader::GetProjectionLocation() {
-	return uniformProjection;
-}
+GLuint Shader::GetProjectionLocation() { return uniformProjection; }
 
-GLuint Shader::GetModelLocation() {
-	return uniformModel;
-}
+GLuint Shader::GetModelLocation() {	return uniformModel; }
 
-GLuint Shader::GetViewLocation() {
-	return uniformView;
-}
+GLuint Shader::GetViewLocation() { return uniformView; }
 
-GLuint Shader::GetAmbientIntensityLocation() {
-  return uniformAmbientIntensity;
-}
+GLuint Shader::GetAmbientIntensityLocation() { return uniformAmbientIntensity; }
 
-GLuint Shader::GetAmbientColorLocation() {
-  return uniformAmbientColor;
-}
+GLuint Shader::GetAmbientColorLocation() { return uniformAmbientColor; }
+
+GLuint Shader::GetDiffuseIntensityLocation() { return uniformDiffuseIntensity; }
+
+GLuint Shader::GetDirectionLocation() { return uniformDirection; }
 
 void Shader::CreateFromString(const char *vertexCode, const char *fragmentCode) {
 	CompileShader(vertexCode, fragmentCode);
@@ -66,60 +63,52 @@ void Shader::CreateFromFiles(const char *vertexLocation, const char *fragmentLoc
 
 
 void Shader::AddShader(GLuint program, const char* shaderCode, GLenum shaderType) {
-	// CREATE SHADER, GIVEN SHADER TYPE
-	GLuint shdr = glCreateShader(shaderType);
+	GLuint shdr = glCreateShader(shaderType);                                           	// CREATE SHADER, GIVEN SHADER TYPE
 
 	const GLchar* code[1];
 	code[0] = shaderCode;
 	GLint codeLength[1];
 	codeLength[0] = strlen(shaderCode);
 
-	// ASSIGN SHADER CODE SOURCE AND COMPILE SHADER
-	glShaderSource(shdr, 1, code, codeLength);
-	glCompileShader(shdr);
+	glShaderSource(shdr, 1, code, codeLength);                                        	// ASSIGN SHADER CODE SOURCE
+	glCompileShader(shdr);                                                              // COMPILE SHADER
 
-	// GET COMPILE STATUS AND PRINT ERRORS IF ANY
-	GLint result = 0;
+	GLint result = 0;                   
 	GLchar eLog[1024] = { 0 };
-	glGetShaderiv(shdr, GL_COMPILE_STATUS, &result);
+	glGetShaderiv(shdr, GL_COMPILE_STATUS, &result);                                   	// GET COMPILE STATUS AND PRINT ERRORS IF ANY
 	if (!result) {
 		glGetProgramInfoLog(shdr, 1024, NULL, eLog);
 		printf("Error compiling %d shader: '%s'\n", shaderType, eLog);
 		return;
 	}
 
-	// ATTACH COMPILED SHADER TO THE GIVEN SHADER PROGRAM
-	glAttachShader(program, shdr);
+	glAttachShader(program, shdr);                                                    	// ATTACH COMPILED SHADER TO THE GIVEN SHADER PROGRAM
 
 	return;
 }
 
 void Shader::CompileShader(const char *vertexCode, const char *fragmentCode) {
-	// CREATE SHADER PROGRAM
-	shaderID = glCreateProgram();
+	shaderID = glCreateProgram();                                                      	// CREATE SHADER PROGRAM
 	if (!shaderID) {
 		printf("Error creating shader program!");
 		return;
 	}
 
-	// ADD VERTEX SHADER AND FRAGMENT SHADER TO THE PROGRAM
-	AddShader(shaderID, vertexCode, GL_VERTEX_SHADER);
-	AddShader(shaderID, fragmentCode, GL_FRAGMENT_SHADER);
+	AddShader(shaderID, vertexCode, GL_VERTEX_SHADER);                                	// ADD VERTEX SHADER TO THE PROGRAM
+	AddShader(shaderID, fragmentCode, GL_FRAGMENT_SHADER);                              // ADD FRAGMENT SHADER TO THE PROGRAM
 
-	// LINK SHADER PROGRAM, GET LINK STATUS AND PRINT ERRORS IF ANY
 	GLint result = 0;
 	GLchar eLog[1024] = { 0 };
-	glLinkProgram(shaderID);
-	glGetProgramiv(shaderID, GL_LINK_STATUS, &result);
+	glLinkProgram(shaderID);                                                           	// LINK SHADER PROGRAM
+	glGetProgramiv(shaderID, GL_LINK_STATUS, &result);                                  // GET LINK STATUS AND PRINT ERRORS IF ANY
 	if (!result) {
 		glGetProgramInfoLog(shaderID, sizeof(eLog), NULL, eLog);
 		printf("Error linking program: '%s'\n", eLog);
 		return;
 	}
 
-	// VALIDATE SHADER PROGRAM, GET VALIDATION STATUS AND PRINT ERRORS IF ANY
-	glValidateProgram(shaderID);
-	glGetProgramiv(shaderID, GL_VALIDATE_STATUS, &result);
+	glValidateProgram(shaderID);                                                       	// VALIDATE SHADER PROGRAM
+	glGetProgramiv(shaderID, GL_VALIDATE_STATUS, &result);                              // GET VALIDATION STATUS AND PRINT ERRORS IF ANY
 	if (!result) {
 		glGetProgramInfoLog(shaderID, sizeof(eLog), NULL, eLog);
 		printf("Error validating program: '%s'\n", eLog);
@@ -129,8 +118,11 @@ void Shader::CompileShader(const char *vertexCode, const char *fragmentCode) {
 	uniformModel = glGetUniformLocation(shaderID, "model");
 	uniformProjection = glGetUniformLocation(shaderID, "projection");
 	uniformView = glGetUniformLocation(shaderID, "view");
+
   uniformAmbientIntensity = glGetUniformLocation(shaderID, "dl.ambientIntensity");
   uniformAmbientColor = glGetUniformLocation(shaderID, "dl.color");
+  uniformDiffuseIntensity = glGetUniformLocation(shaderID, "dl.diffuseIntensity");
+  uniformDirection = glGetUniformLocation(shaderID, "dl.direction");
 }
 
 
@@ -147,8 +139,11 @@ void Shader::ClearShader() {
 	uniformModel = 0;
 	uniformProjection = 0;
 	uniformView = 0;
+
   uniformAmbientColor = 0;
   uniformAmbientIntensity = 0;
+  uniformDirection = 0;
+  uniformDiffuseIntensity = 0;
 }
 
 // DESTRUCTOR

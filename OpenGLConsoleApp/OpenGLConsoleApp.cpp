@@ -38,6 +38,46 @@ GLfloat deltaTime = 0.0f, lastTime = 0.0f;
 static const char* vertexShader = "Shaders/vs.vert";                                                            // VERTEX SHADER
 static const char* fragmentShader = "Shaders/fs.frag";                                                          // FRAGMENT SHADER
 
+
+void CalculateAverageNormals(unsigned int* indices, unsigned int indicesCount, GLfloat* vertices, unsigned int verticesCount, unsigned int vertexLength, unsigned int normalOffset) {
+  for (size_t i = 0; i < indicesCount; i += 3) {
+    unsigned int index0 = indices[i] * vertexLength;
+    unsigned int index1 = indices[i + 1] * vertexLength;
+    unsigned int index2 = indices[i + 2] * vertexLength;
+
+    glm::vec3 v1(vertices[index1] - vertices[index0], vertices[index1 + 1] - vertices[index0 + 1], vertices[index1 + 2] - vertices[index0 + 2]);
+    glm::vec3 v2(vertices[index2] - vertices[index0], vertices[index2 + 1] - vertices[index0 + 1], vertices[index2 + 2] - vertices[index0 + 2]);
+
+    glm::vec3 normal = glm::cross(v1, v2);
+    normal = glm::normalize(normal);
+
+    index0 += normalOffset;
+    vertices[index0] += normal.x;
+    vertices[index0 + 1] += normal.y;
+    vertices[index0 + 2] += normal.z;
+
+    index1 += normalOffset;
+    vertices[index1] += normal.x;
+    vertices[index1 + 1] += normal.y;
+    vertices[index1 + 2] += normal.z;
+
+    index2 += normalOffset;
+    vertices[index2] += normal.x;
+    vertices[index2 + 1] += normal.y;
+    vertices[index2 + 2] += normal.z;
+  }
+
+  for (size_t i = 0; i < verticesCount / vertexLength; i++) {
+    unsigned int nOffset = i * vertexLength + normalOffset;
+    glm::vec3 v(vertices[nOffset], vertices[nOffset + 1], vertices[nOffset + 2]);
+    v = glm::normalize(v);
+
+    vertices[nOffset] = v.x;
+    vertices[nOffset + 1] = v.y;
+    vertices[nOffset + 2] = v.z;
+  }
+}
+
 void CreateShaders() {
 	Shader *shader1 = new Shader();
 	shader1->CreateFromFiles(vertexShader, fragmentShader);
@@ -56,11 +96,11 @@ void CreateObjects() {
 
 	GLfloat vertices[] = {
     // x, y, z - VERTEX COORDINATES, u, v -  TEXTURE COORDINATES
-    // LINE FORMAT: x, y, z, u, v 
-		-1.0f,  -1.0f,  0.0f,     0.0f, 0.0f,		// 0
-		0.0f,   -1.0f,  1.0f,     0.5f, 0.0f,		// 1
-		1.0f,   -1.0f,  0.0f,     1.0f, 0.0f,		// 2
-		0.0f,   1.0f,   0.0f,     0.5f, 1.0f	  // 3
+    // LINE FORMAT: x, y, z, u, v, normalX, normalY, normalZ
+		-1.0f,  -1.0f,  0.0f,     0.0f, 0.0f,   0.0f, 0.0f, 0.0f,	  // 0
+		0.0f,   -1.0f,  1.0f,     0.5f, 0.0f,   0.0f, 0.0f, 0.0f,		// 1
+		1.0f,   -1.0f,  0.0f,     1.0f, 0.0f,   0.0f, 0.0f, 0.0f,		// 2
+		0.0f,   1.0f,   0.0f,     0.5f, 1.0f,   0.0f, 0.0f, 0.0f	  // 3
 	};
 
 	unsigned int indices[] = {                                                                                  	// FOR INDEXED DRAW
@@ -70,12 +110,14 @@ void CreateObjects() {
 		0, 1, 2
 	};
 
+  CalculateAverageNormals(indices, 12, vertices, 32, 8, 5);
+
 	Mesh *obj1 = new Mesh();
-	obj1->CreateMesh(vertices, indices, 20, 12);
+	obj1->CreateMesh(vertices, indices, 32, 12);
 	meshList.push_back(obj1);
 
 	Mesh *obj2 = new Mesh();
-	obj2->CreateMesh(vertices, indices, 20, 12);
+	obj2->CreateMesh(vertices, indices, 32, 12);
 	meshList.push_back(obj2);
 }
 
@@ -84,7 +126,6 @@ int main() {
 	mainWindow.Initialize();
 
 	CreateObjects();                                                                                          	  // CALL FUNCTION TO CREATE OBJECT DATA
-	
 	CreateShaders();                                                                                            	// ADD AND COMPILE SHADERS AND SHADER PROGRAM
 
 	camera = Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 5.0f, 0.5f);        	// INITIALIZE CAMERA
@@ -94,11 +135,11 @@ int main() {
   dirtTexture = Texture((char*)"Textures/dirt.png");
   dirtTexture.LoadTexture();
 
-  mainLight = Light(1.0f, 1.0f, 1.0f, 1.0f);                                                                    // INITIALIZE AMBIENT LIGHT
+  mainLight = Light(1.0f, 1.0f, 1.0f, 0.2f, 2.0f, -1.0f, -2.0f, 1.0f);                                          // INITIALIZE AMBIENT + DIFFUSE LIGHT
 
 	glm::mat4 projectionMatrix = glm::perspective(45.0f, mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 100.0f);    	// CALCULATE PROJECTION MATRIX ONCE AND REUSE IN THE APPLICATION
 
-	GLuint uniformModel = 0, uniformProjection = 0, uniformView = 0, uniformAmbientIntensity = 0, uniformAmbientColor = 0;
+	GLuint uniformModel = 0, uniformProjection = 0, uniformView = 0, uniformAmbientIntensity = 0, uniformAmbientColor = 0, uniformDirection = 0, uniformDiffuseIntensity = 0;
 	
 	while (!mainWindow.GetShouldClose()) {                                                                         // LOOP UNTIL WINDOW CLOSES
 		GLfloat now = glfwGetTime();                                                                                 // CALCULATE DELTA TIME
@@ -114,13 +155,15 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		shaderList[0]->UseShader();                                                                             		// USE SHADER PROGRAM
-		uniformModel = shaderList[0]->GetModelLocation();                                                           // GET UNIFORMS LOCATIONS
+		uniformModel = shaderList[0]->GetModelLocation();                                                           // GET UNIFORMS' LOCATIONS
 		uniformProjection = shaderList[0]->GetProjectionLocation();
 		uniformView = shaderList[0]->GetViewLocation();
     uniformAmbientIntensity = shaderList[0]->GetAmbientIntensityLocation();
     uniformAmbientColor = shaderList[0]->GetAmbientColorLocation();
+    uniformDirection = shaderList[0]->GetDirectionLocation();
+    uniformDiffuseIntensity = shaderList[0]->GetDiffuseIntensityLocation();
 
-    mainLight.UseLight(uniformAmbientIntensity, uniformAmbientColor);                                           // USE AMBIENT LIGHT
+    mainLight.UseLight(uniformAmbientIntensity, uniformAmbientColor, uniformDiffuseIntensity, uniformDirection);    // USE AMBIENT + DIFFUSE LIGHT
 
 		// // BEGIN OBJECT 1 SECTION
 		glm::mat4 modelMatrix = glm::mat4(1.0f);                                                                		// INITIALIZE MODEL MATRIX AS IDENTITY AND TRANSFORM
