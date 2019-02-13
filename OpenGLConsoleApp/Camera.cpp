@@ -78,10 +78,8 @@ void Camera::Update() {
 	front.z = cos(glm::radians(pitch)) * sin(glm::radians(yaw));
 	front = glm::normalize(front);
 
-	// RIGHT = CROSS PRODUCT OF FRONT AND WORLD UP
-	right = glm::normalize(glm::cross(front, worldUp));
-	// UP = CROSS PRODUCT OF FRONT AND RIGHT, ORDER IS IMPORTANT
-	up = glm::normalize(glm::cross(right, front));
+	right = glm::normalize(glm::cross(front, worldUp));                   	// RIGHT = CROSS PRODUCT OF FRONT AND WORLD UP
+	up = glm::normalize(glm::cross(right, front));                        	// UP = CROSS PRODUCT OF FRONT AND RIGHT, ORDER IS IMPORTANT
 }
 
 // DESTRUCTOR

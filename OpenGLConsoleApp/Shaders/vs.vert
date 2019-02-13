@@ -12,6 +12,6 @@ out vec2 texCoord;
 
 void main() {
 	gl_Position = projection * view * model * vec4(pos, 1.0);
-	vertexColor = vec4(clamp(pos, 0.0f, 1.0f), 1.0);
+	vertexColor = vec4(clamp(pos, 0.0f, 1.0f), 1.0f);
 	texCoord = tex;
 }

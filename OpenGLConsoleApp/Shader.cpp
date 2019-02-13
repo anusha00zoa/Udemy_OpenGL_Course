@@ -6,6 +6,8 @@ Shader::Shader() {
 	uniformModel = 0;
 	uniformView = 0;
 	uniformProjection = 0;
+  uniformAmbientColor = 0;
+  uniformAmbientIntensity = 0;
 }
 
 // GETTER FUNCTIONS
@@ -21,6 +23,13 @@ GLuint Shader::GetViewLocation() {
 	return uniformView;
 }
 
+GLuint Shader::GetAmbientIntensityLocation() {
+  return uniformAmbientIntensity;
+}
+
+GLuint Shader::GetAmbientColorLocation() {
+  return uniformAmbientColor;
+}
 
 void Shader::CreateFromString(const char *vertexCode, const char *fragmentCode) {
 	CompileShader(vertexCode, fragmentCode);
@@ -120,6 +129,8 @@ void Shader::CompileShader(const char *vertexCode, const char *fragmentCode) {
 	uniformModel = glGetUniformLocation(shaderID, "model");
 	uniformProjection = glGetUniformLocation(shaderID, "projection");
 	uniformView = glGetUniformLocation(shaderID, "view");
+  uniformAmbientIntensity = glGetUniformLocation(shaderID, "dl.ambientIntensity");
+  uniformAmbientColor = glGetUniformLocation(shaderID, "dl.color");
 }
 
 
@@ -136,6 +147,8 @@ void Shader::ClearShader() {
 	uniformModel = 0;
 	uniformProjection = 0;
 	uniformView = 0;
+  uniformAmbientColor = 0;
+  uniformAmbientIntensity = 0;
 }
 
 // DESTRUCTOR

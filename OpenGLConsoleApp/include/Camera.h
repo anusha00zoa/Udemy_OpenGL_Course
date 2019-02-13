@@ -21,16 +21,11 @@ public:
 
 private:
 	// CAMERA POSITION AND DIRECTION VECTORS
-	glm::vec3 position,
-		front,
-		up,
-		right,
-		worldUp;
+	glm::vec3 position, front, up, right, worldUp;
 
 	GLfloat yaw, pitch, roll;
 
-	GLfloat moveSpeed,
-		turnSpeed;
+	GLfloat moveSpeed, turnSpeed;
 
 	void Update();
 };
