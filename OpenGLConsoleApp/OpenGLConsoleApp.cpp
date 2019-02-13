@@ -19,6 +19,7 @@
 #include "Camera.h"
 #include "Texture.h"
 #include "Light.h"
+#include "Material.h"
 
 const float degreesToRadians = 3.141529265f / 180.0f;
 
@@ -32,6 +33,8 @@ Camera camera;
 Texture brickTexture, dirtTexture;
 
 Light mainLight;
+
+Material shinyMat, dullMat;
 
 GLfloat deltaTime = 0.0f, lastTime = 0.0f;
 
@@ -122,7 +125,7 @@ void CreateObjects() {
 }
 
 int main() {
-	mainWindow = MyWindow(800, 600);                                                                        	    // CREATE WINDOW
+	mainWindow = MyWindow(1366, 768);                                                                        	    // CREATE WINDOW
 	mainWindow.Initialize();
 
 	CreateObjects();                                                                                          	  // CALL FUNCTION TO CREATE OBJECT DATA
@@ -137,9 +140,13 @@ int main() {
 
   mainLight = Light(1.0f, 1.0f, 1.0f, 0.2f, 2.0f, -1.0f, -2.0f, 1.0f);                                          // INITIALIZE AMBIENT + DIFFUSE LIGHT
 
+  shinyMat = Material(1.0f, 32);
+  dullMat = Material(0.3f, 4);
+
 	glm::mat4 projectionMatrix = glm::perspective(45.0f, mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 100.0f);    	// CALCULATE PROJECTION MATRIX ONCE AND REUSE IN THE APPLICATION
 
-	GLuint uniformModel = 0, uniformProjection = 0, uniformView = 0, uniformAmbientIntensity = 0, uniformAmbientColor = 0, uniformDirection = 0, uniformDiffuseIntensity = 0;
+	GLuint uniformModel = 0, uniformProjection = 0, uniformView = 0, uniformEyePosition = 0,
+    uniformAmbientIntensity = 0, uniformAmbientColor = 0, uniformDirection = 0, uniformDiffuseIntensity = 0, uniformSpecularIntensity = 0, uniformShininess = 0;
 	
 	while (!mainWindow.GetShouldClose()) {                                                                         // LOOP UNTIL WINDOW CLOSES
 		GLfloat now = glfwGetTime();                                                                                 // CALCULATE DELTA TIME
@@ -158,32 +165,41 @@ int main() {
 		uniformModel = shaderList[0]->GetModelLocation();                                                           // GET UNIFORMS' LOCATIONS
 		uniformProjection = shaderList[0]->GetProjectionLocation();
 		uniformView = shaderList[0]->GetViewLocation();
+    uniformEyePosition = shaderList[0]->GetEyePositionLocation();
+
     uniformAmbientIntensity = shaderList[0]->GetAmbientIntensityLocation();
     uniformAmbientColor = shaderList[0]->GetAmbientColorLocation();
     uniformDirection = shaderList[0]->GetDirectionLocation();
     uniformDiffuseIntensity = shaderList[0]->GetDiffuseIntensityLocation();
+    uniformSpecularIntensity = shaderList[0]->GetSpecularIntensityLocation();
+    uniformShininess = shaderList[0]->GetShininessLocation();
 
     mainLight.UseLight(uniformAmbientIntensity, uniformAmbientColor, uniformDiffuseIntensity, uniformDirection);    // USE AMBIENT + DIFFUSE LIGHT
+
+    glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+    glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.CalculateViewMatrix()));
+    glUniform3f(uniformEyePosition, camera.GetCameraPosition().x, camera.GetCameraPosition().y, camera.GetCameraPosition().z);
+
 
 		// // BEGIN OBJECT 1 SECTION
 		glm::mat4 modelMatrix = glm::mat4(1.0f);                                                                		// INITIALIZE MODEL MATRIX AS IDENTITY AND TRANSFORM
     modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, -2.5f));
-    modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f, 0.3f, 1.0f));
+    //modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f, 0.3f, 1.0f));
 		// // DEBUG PRINT glm::mat4
 		//std::cout << glm::to_string(modelMatrix) << std::endl;
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.CalculateViewMatrix()));
 		brickTexture.UseTexture();
+    shinyMat.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		meshList[0]->RenderMesh();
 		// // END OBJECT 1 SECTION
 		
 		// // BEGIN OBJECT 2 SECTION
 		modelMatrix = glm::mat4(1.0f);                                                                              // INITIALIZE MODEL MATRIX AS IDENTITY AND TRANSFORM
-    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 1.0f, -2.5f));
-    modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f, 0.3f, 1.0f));
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 4.0f, -2.5f));
+    //modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f, 0.3f, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(modelMatrix));
     dirtTexture.UseTexture();
+    dullMat.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		meshList[1]->RenderMesh();
 		// // END OBJECT 2 SECTION
 
