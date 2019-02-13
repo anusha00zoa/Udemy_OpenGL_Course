@@ -182,8 +182,8 @@
     <ClInclude Include="include/MyWindow.h" />
     <ClInclude Include="include/Shader.h" />
     <ClInclude Include="include/Texture.h" />
-    <ClInclude Include="Light.h" />
-    <ClInclude Include="Material.h" />
+    <ClInclude Include="include/Light.h" />
+    <ClInclude Include="include/Material.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

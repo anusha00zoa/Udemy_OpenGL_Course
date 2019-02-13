@@ -56,10 +56,10 @@
     <ClInclude Include="include/Texture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Light.h">
+    <ClInclude Include="include/Light.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Material.h">
+    <ClInclude Include="include/Material.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
