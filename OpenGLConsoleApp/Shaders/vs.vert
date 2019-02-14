@@ -14,7 +14,7 @@ out vec3 normal;
 out vec3 fragPos;
 
 void main() {
-	gl_Position = projection * view * model * vec4(pos, 1.0);
+	gl_Position = projection * view * model * vec4(pos, 1.0f);
 	vertexColor = vec4(clamp(pos, 0.0f, 1.0f), 1.0f);
 	
 	texCoord = tex;
@@ -27,5 +27,5 @@ void main() {
 	// THEREFORE WE INVERT THE SCALINGS BY APPLYING TRANSPOSE AND THEN INVERSE
 	normal = mat3(inverse(transpose(model))) * norm;
 	
-	fragPos = (model * vec4(pos, 1.0)).xyz;
+	fragPos = (model * vec4(pos, 1.0f)).xyz;
 }

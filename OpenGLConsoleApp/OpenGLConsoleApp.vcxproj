@@ -168,15 +168,18 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="DirectionalLight.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="MyWindow.cpp" />
     <ClCompile Include="OpenGLConsoleApp.cpp" />
+    <ClCompile Include="PointLight.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include/DirectionalLight.h" />
     <ClInclude Include="include/Camera.h" />
     <ClInclude Include="include/Mesh.h" />
     <ClInclude Include="include/MyWindow.h" />
@@ -184,6 +187,8 @@
     <ClInclude Include="include/Texture.h" />
     <ClInclude Include="include/Light.h" />
     <ClInclude Include="include/Material.h" />
+    <ClInclude Include="include\CommonValues.h" />
+    <ClInclude Include="include/PointLight.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
