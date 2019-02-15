@@ -135,30 +135,50 @@ void Shader::CompileShader(const char *vertexCode, const char *fragmentCode) {
   uniformShininess = glGetUniformLocation(shaderID, "mat.shininess");
 
   uniformPointLightCount = glGetUniformLocation(shaderID, "pointLightCount");
-
   for (size_t i = 0; i < MAX_POINT_LIGHTS; i++) {
     char locBuff[100] = { '\0' };
 
     snprintf(locBuff, sizeof(locBuff), "pl[%d].base.color", i);
     uniformPointLight[i].uniformColor = glGetUniformLocation(shaderID, locBuff);
-
     snprintf(locBuff, sizeof(locBuff), "pl[%d].base.ambientIntensity", i);
     uniformPointLight[i].uniformAmbientIntensity = glGetUniformLocation(shaderID, locBuff);
-
     snprintf(locBuff, sizeof(locBuff), "pl[%d].base.diffuseIntensity", i);
     uniformPointLight[i].uniformDiffuseIntensity = glGetUniformLocation(shaderID, locBuff);
 
     snprintf(locBuff, sizeof(locBuff), "pl[%d].position", i);
     uniformPointLight[i].uniformPosition = glGetUniformLocation(shaderID, locBuff);
-
     snprintf(locBuff, sizeof(locBuff), "pl[%d].constant", i);
     uniformPointLight[i].uniformConstant = glGetUniformLocation(shaderID, locBuff);
-
     snprintf(locBuff, sizeof(locBuff), "pl[%d].linear", i);
     uniformPointLight[i].uniformLinear = glGetUniformLocation(shaderID, locBuff);
-
     snprintf(locBuff, sizeof(locBuff), "pl[%d].exponent", i);
     uniformPointLight[i].uniformExponent = glGetUniformLocation(shaderID, locBuff);
+  }
+
+  uniformSpotLightCount = glGetUniformLocation(shaderID, "spotLightCount");
+  for (size_t i = 0; i < MAX_SPOT_LIGHTS; i++) {
+    char locBuff[100] = { '\0' };
+
+    snprintf(locBuff, sizeof(locBuff), "sl[%d].base.base.color", i);
+    uniformSpotLight[i].uniformColor = glGetUniformLocation(shaderID, locBuff);
+    snprintf(locBuff, sizeof(locBuff), "sl[%d].base.base.ambientIntensity", i);
+    uniformSpotLight[i].uniformAmbientIntensity = glGetUniformLocation(shaderID, locBuff);
+    snprintf(locBuff, sizeof(locBuff), "sl[%d].base.base.diffuseIntensity", i);
+    uniformSpotLight[i].uniformDiffuseIntensity = glGetUniformLocation(shaderID, locBuff);
+
+    snprintf(locBuff, sizeof(locBuff), "sl[%d].base.position", i);
+    uniformSpotLight[i].uniformPosition = glGetUniformLocation(shaderID, locBuff);
+    snprintf(locBuff, sizeof(locBuff), "sl[%d].base.constant", i);
+    uniformSpotLight[i].uniformConstant = glGetUniformLocation(shaderID, locBuff);
+    snprintf(locBuff, sizeof(locBuff), "sl[%d].base.linear", i);
+    uniformSpotLight[i].uniformLinear = glGetUniformLocation(shaderID, locBuff);
+    snprintf(locBuff, sizeof(locBuff), "sl[%d].base.exponent", i);
+    uniformSpotLight[i].uniformExponent = glGetUniformLocation(shaderID, locBuff);
+
+    snprintf(locBuff, sizeof(locBuff), "sl[%d].direction", i);
+    uniformSpotLight[i].uniformDirection = glGetUniformLocation(shaderID, locBuff);
+    snprintf(locBuff, sizeof(locBuff), "sl[%d].edge", i);
+    uniformSpotLight[i].uniformEdge = glGetUniformLocation(shaderID, locBuff);
   }
 }
 
@@ -179,6 +199,21 @@ void Shader::SetPointLights(PointLight *pLight, unsigned int lightCount) {
     pLight[i].UseLight(uniformPointLight[i].uniformAmbientIntensity, uniformPointLight[i].uniformColor, uniformPointLight[i].uniformDiffuseIntensity,
                         uniformPointLight[i].uniformPosition, 
                         uniformPointLight[i].uniformConstant, uniformPointLight[i].uniformLinear, uniformPointLight[i].uniformExponent);
+  }
+}
+
+void Shader::SetSpotLights(SpotLight * sLight, unsigned int lightCount) {
+  if (lightCount > MAX_SPOT_LIGHTS) {
+    lightCount = MAX_SPOT_LIGHTS;
+  }
+
+  glUniform1i(uniformSpotLightCount, lightCount);
+
+  for (size_t i = 0; i < lightCount; i++) {
+    sLight[i].UseLight(uniformSpotLight[i].uniformAmbientIntensity, uniformSpotLight[i].uniformColor, uniformSpotLight[i].uniformDiffuseIntensity,
+      uniformSpotLight[i].uniformPosition, uniformSpotLight[i].uniformDirection,
+      uniformSpotLight[i].uniformConstant, uniformSpotLight[i].uniformLinear, uniformSpotLight[i].uniformExponent,
+      uniformSpotLight[i].uniformEdge);
   }
 }
 

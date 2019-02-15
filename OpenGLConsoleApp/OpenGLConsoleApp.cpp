@@ -20,6 +20,7 @@
 #include "Texture.h"
 #include "DirectionalLight.h"
 #include "PointLight.h"
+#include "SpotLight.h"
 #include "Material.h"
 #include "CommonValues.h"
 
@@ -36,6 +37,7 @@ Texture brickTexture, dirtTexture, floorTexture;
 
 DirectionalLight mainLight;
 PointLight pointLights[MAX_POINT_LIGHTS];
+SpotLight spotLights[MAX_SPOT_LIGHTS];
 
 Material shinyMat, dullMat;
 
@@ -166,16 +168,25 @@ int main() {
 
   unsigned int pointLightCount = 0;
   pointLights[0] = PointLight(1.0f, 0.0f, 0.0f, 
-                              0.2f, 1.0f, 
+                              1.0f, 0.1f, 
                               -4.0f, 2.0f, 0.0f, 
                               0.3f, 0.1f, 0.1f);                                                                // INITIALIZE POINT LIGHTS
   pointLightCount++;
   pointLights[1] = PointLight(0.0f, 1.0f, 0.0f,
-                              0.2f, 1.0f,
+                              1.0f, 0.1f,
                               4.0f, 2.0f, 0.0f,
-                              0.3f, 0.2f, 0.1f);                                                                // INITIALIZE POINT LIGHTS
+                              0.3f, 0.2f, 0.1f);
   pointLightCount++;
 
+  unsigned int spotLightCount = 0;
+  spotLights[0] = SpotLight(0.0f, 0.0f, 1.0f,
+                            0.0f, 1.0f,
+                            0.0f, 0.0f, 0.0f,
+                            0.0f,-1.0f, 0.0f,
+                            0.3f, 0.2f, 0.1f,
+                            20.0f);                                                                           // INITIALIZE SPOT LIGHTS
+  spotLightCount++;
+  
 
   shinyMat = Material(1.0f, 32);
   dullMat = Material(0.3f, 4);
@@ -206,9 +217,14 @@ int main() {
     uniformSpecularIntensity = shaderList[0]->GetSpecularIntensityLocation();
     uniformShininess = shaderList[0]->GetShininessLocation();
 
+    glm::vec3 lowerLight = camera.GetCameraPosition();                                                          // CREATE FLASHLIGHT FROM CAMERA'S PERSPECTIVE
+    lowerLight.y -= 0.3f;
+    spotLights[0].SetFlash(lowerLight, camera.GetCameraDirection());                                            
+
     //mainLight.UseLight(uniformAmbientIntensity, uniformAmbientColor, uniformDiffuseIntensity, uniformDirection);    // USE DIRECTIONAL LIGHT
     shaderList[0]->SetDirectionalLight(&mainLight);
     shaderList[0]->SetPointLights(pointLights, pointLightCount);
+    shaderList[0]->SetSpotLights(spotLights, spotLightCount);
 
     glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
     glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.CalculateViewMatrix()));
@@ -240,7 +256,7 @@ int main() {
     modelMatrix = glm::mat4(1.0f);
     modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, -2.0f, 0.0f));
     glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-    floorTexture.UseTexture();
+    dirtTexture.UseTexture();
     dullMat.UseMaterial(uniformSpecularIntensity, uniformShininess);
     meshList[2]->RenderMesh();
     // // END OBJECT 3 SECTION

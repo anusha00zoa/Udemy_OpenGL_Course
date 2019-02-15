@@ -45,36 +45,42 @@
     <ClCompile Include="PointLight.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SpotLight.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include/Mesh.h">
+    <ClInclude Include="include\Mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include/Shader.h">
+    <ClInclude Include="include\Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include/MyWindow.h">
+    <ClInclude Include="include\MyWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include/Camera.h">
+    <ClInclude Include="include\Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include/Texture.h">
+    <ClInclude Include="include\Texture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include/Light.h">
+    <ClInclude Include="include\Light.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include/Material.h">
+    <ClInclude Include="include\Material.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include/DirectionalLight.h">
+    <ClInclude Include="include\DirectionalLight.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include/PointLight.h">
+    <ClInclude Include="include\PointLight.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\CommonValues.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\SpotLight.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
