@@ -2,123 +2,137 @@
 
 // CONSTRUCTORS
 MyWindow::MyWindow() {
-	width = 800;
-	height = 600;
+  width = 800;
+  height = 600;
 
-	for (size_t i = 0; i < 1024; i++) {
-		keys[i] = 0;
-	}
+  for (size_t i = 0; i < 1024; i++) {
+    keys[i] = 0;
+  }
 }
 
 MyWindow::MyWindow(GLint windowWidth, GLint windowHeight) {
-	width = windowWidth;
-	height = windowHeight;
+  width = windowWidth;
+  height = windowHeight;
 }
 
 
 // GETTER FUNCTIONS
 GLfloat MyWindow::getXChange() {
-	GLfloat theChange = xChange;
-	xChange = 0.0f;
-	return theChange;
+  GLfloat theChange = xChange;
+  xChange = 0.0f;
+  return theChange;
 }
 
 GLfloat MyWindow::getYChange() {
-	GLfloat theChange = yChange;
-	yChange = 0.0f;
-	return theChange;
+  GLfloat theChange = yChange;
+  yChange = 0.0f;
+  return theChange;
 }
 
 
 int MyWindow::Initialize() {
-	if (!glfwInit()) {                                                                      	// INITIALIZE GLFW
-		printf("GLFW Initialization failed!");
-		glfwTerminate();
-		return 1;
-	}
+  // INITIALIZE GLFW
+  if (!glfwInit()) {                                                                      	
+    printf("GLFW Initialization failed!");
+    glfwTerminate();
+    return 1;
+  }
 
-	// // SETUP GLFW WINDOW PROPERTIES
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);                                           	// OPENGL VERSION
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);                          	// CORE PROFILE = NO BACKWARDS COMPATIBILITY
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);                                    	// ALLOW FORWARD COMPATIBILITY
+  // // SETUP GLFW WINDOW PROPERTIES
+  // OPENGL VERSION
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);                                           	
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+  // CORE PROFILE = NO BACKWARDS COMPATIBILITY
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  // ALLOW FORWARD COMPATIBILITY
+  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);                                    	
 
-	mainWindow = glfwCreateWindow(width, height, "OpenGLConsoleAppWindow", NULL, NULL);
-	if (!mainWindow) {
-		printf("GLFW window creation failed!");
-		glfwTerminate();
-		return 1;
-	}
+  mainWindow = glfwCreateWindow(width, height, "OpenGLConsoleAppWindow", NULL, NULL);
+  if (!mainWindow) {
+    printf("GLFW window creation failed!");
+    glfwTerminate();
+    return 1;
+  }
 
-	glfwGetFramebufferSize(mainWindow, &bufferWidth, &bufferHeight);                        	// GET BUFFER SIZE INFORMATION
-	glfwMakeContextCurrent(mainWindow);                                                     	// SET CONTEXT FOR GLEW TO USE
+  // GET BUFFER SIZE INFORMATION
+  glfwGetFramebufferSize(mainWindow, &bufferWidth, &bufferHeight);
+  // SET CONTEXT FOR GLEW TO USE
+  glfwMakeContextCurrent(mainWindow);                                                     	
 
-	CreateCallbacks();                                                                       	// HANDLE KEY + MOUSE INPUT
+  // HANDLE KEY + MOUSE INPUT
+  CreateCallbacks();                                                                       	
 
-	glfwSetInputMode(mainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);                        	// TO HIDE THE CURSOR IN THE WINDOW
-	glewExperimental = GL_TRUE;                                                             	// ALLOW MODERN EXTENSION FEATURES
+  // TO HIDE THE CURSOR IN THE WINDOW
+  glfwSetInputMode(mainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  // ALLOW MODERN EXTENSION FEATURES
+  glewExperimental = GL_TRUE;                                                             	
 
-	if (glewInit() != GLEW_OK) {                                                            	// INITIALIZE GLEW
-		printf("GLEW Initialization failed!");
-		glfwDestroyWindow(mainWindow);
-		glfwTerminate();
-		return 1;
-	}
+  // INITIALIZE GLEW
+  if (glewInit() != GLEW_OK) {                                                            	
+    printf("GLEW Initialization failed!");
+    glfwDestroyWindow(mainWindow);
+    glfwTerminate();
+    return 1;
+  }
 
-	glEnable(GL_DEPTH_TEST);                                                                	// ENABLE DEPTH BUFFER
-	glViewport(0, 0, bufferWidth, bufferHeight);                                            	// SETUP VIEWPORT SIZE
-	glfwSetWindowUserPointer(mainWindow, this);                                             	// SET USER OF THIS WINDOW
+  // ENABLE DEPTH BUFFER
+  glEnable(GL_DEPTH_TEST);
+  // SETUP VIEWPORT SIZE
+  glViewport(0, 0, bufferWidth, bufferHeight);
+  // SET USER OF THIS WINDOW
+  glfwSetWindowUserPointer(mainWindow, this);                                             	
 
-	return 0;
+  return 0;
 }
 
 void MyWindow::CreateCallbacks() {
-	glfwSetKeyCallback(mainWindow, HandleKeys);
-	glfwSetCursorPosCallback(mainWindow, HandleMouse);
+  glfwSetKeyCallback(mainWindow, HandleKeys);
+  glfwSetCursorPosCallback(mainWindow, HandleMouse);
 }
 
 void MyWindow::HandleKeys(GLFWwindow *window, int key, int code, int action, int mode) {
-	MyWindow *theWindow = static_cast<MyWindow*>(glfwGetWindowUserPointer(window));
+  MyWindow *theWindow = static_cast<MyWindow*>(glfwGetWindowUserPointer(window));
 
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-		glfwSetWindowShouldClose(window, GL_TRUE);
-	}
+  if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+    glfwSetWindowShouldClose(window, GL_TRUE);
+  }
 
-	if (key >= 0 && key < 1024) {
-		if (action == GLFW_PRESS) {
-			theWindow->keys[key] = true;
-			// printf("Pressed: %d\n", key);
-		}
-		else if (action == GLFW_RELEASE) {
-			theWindow->keys[key] = false;
-			// printf("Released: %d\n", key);
+  if (key >= 0 && key < 1024) {
+    if (action == GLFW_PRESS) {
+      theWindow->keys[key] = true;
+      // printf("Pressed: %d\n", key);
+    }
+    else if (action == GLFW_RELEASE) {
+      theWindow->keys[key] = false;
+      // printf("Released: %d\n", key);
 
-		}
-	}
+    }
+  }
 }
 
 void MyWindow::HandleMouse(GLFWwindow *window, double xPos, double yPos) {
-	MyWindow *theWindow = static_cast<MyWindow*>(glfwGetWindowUserPointer(window));
-	
-	if (theWindow->mouseFirstMoved) {
-		theWindow->lastX = xPos;
-		theWindow->lastY = yPos;
-		theWindow->mouseFirstMoved = false;
-	}
+  MyWindow *theWindow = static_cast<MyWindow*>(glfwGetWindowUserPointer(window));
+  
+  if (theWindow->mouseFirstMoved) {
+    theWindow->lastX = xPos;
+    theWindow->lastY = yPos;
+    theWindow->mouseFirstMoved = false;
+  }
 
-	theWindow->xChange = xPos - theWindow->lastX;
-	theWindow->yChange = theWindow->lastY - yPos;	                                          // TO MATCH THE Y DIRECTION OF THE COORDINATE SYSTEM 
+  theWindow->xChange = xPos - theWindow->lastX;
+  // TO MATCH THE Y DIRECTION OF THE COORDINATE SYSTEM
+  theWindow->yChange = theWindow->lastY - yPos;	                                           
 
-	theWindow->lastX = xPos;
-	theWindow->lastY = yPos;
-	
-	// printf("x:%.6f, y:%.6f\n", theWindow->xChange, theWindow->yChange);
+  theWindow->lastX = xPos;
+  theWindow->lastY = yPos;
+  
+  // printf("x:%.6f, y:%.6f\n", theWindow->xChange, theWindow->yChange);
 }
 
 
 
 // DESTRUCTOR
 MyWindow::~MyWindow() {
-	glfwDestroyWindow(mainWindow);
-	glfwTerminate();
+  glfwDestroyWindow(mainWindow);
+  glfwTerminate();
 }

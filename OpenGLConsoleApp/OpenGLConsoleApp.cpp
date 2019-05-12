@@ -22,7 +22,9 @@
 #include "PointLight.h"
 #include "SpotLight.h"
 #include "Material.h"
+#include "MyModel.h"
 #include "CommonValues.h"
+
 
 const float degreesToRadians = 3.141529265f / 180.0f;
 
@@ -35,6 +37,8 @@ Camera camera;
 
 Texture brickTexture, dirtTexture, floorTexture;
 
+MyModel pottedPlant;
+
 DirectionalLight mainLight;
 PointLight pointLights[MAX_POINT_LIGHTS];
 SpotLight spotLights[MAX_SPOT_LIGHTS];
@@ -43,8 +47,10 @@ Material shinyMat, dullMat;
 
 GLfloat deltaTime = 0.0f, lastTime = 0.0f;
 
-static const char* vertexShader = "Shaders/vs.vert";                                                            // VERTEX SHADER
-static const char* fragmentShader = "Shaders/fs.frag";                                                          // FRAGMENT SHADER
+// VERTEX SHADER
+static const char* vertexShader = "Shaders/vs.vert";
+// FRAGMENT SHADER
+static const char* fragmentShader = "Shaders/fs.frag";                          
 
 
 void CalculateAverageNormals(unsigned int* indices, unsigned int indicesCount, GLfloat* vertices, unsigned int verticesCount, unsigned int vertexLength, unsigned int normalOffset) {
@@ -87,36 +93,37 @@ void CalculateAverageNormals(unsigned int* indices, unsigned int indicesCount, G
 }
 
 void CreateShaders() {
-	Shader *shader1 = new Shader();
-	shader1->CreateFromFiles(vertexShader, fragmentShader);
-	shaderList.push_back(shader1);
+  Shader *shader1 = new Shader();
+  shader1->CreateFromFiles(vertexShader, fragmentShader);
+  shaderList.push_back(shader1);
 }
 
 void CreateObjects() {
-	// // DEFINE VERTICES FOR OBJECT TO BE DRAWN
-	
-	// USE THESE VERTICES TO DRAW A FULL SPECTRUM COLORED TRIANGLE
-	/*GLfloat vertices[] = {
-		1.0f, 0.0f, 0.0f,
-		0.0f, 1.0f, 0.0f,
-		0.0f, 0.0f, 1.0f
-	};*/ 
+  // // DEFINE VERTICES FOR OBJECT TO BE DRAWN
+  
+  // USE THESE VERTICES TO DRAW A FULL SPECTRUM COLORED TRIANGLE
+  /*GLfloat vertices[] = {
+    1.0f, 0.0f, 0.0f,
+    0.0f, 1.0f, 0.0f,
+    0.0f, 0.0f, 1.0f
+  };*/ 
 
-	GLfloat vertices[] = {
+  GLfloat vertices[] = {
     // x, y, z - VERTEX COORDINATES, u, v -  TEXTURE COORDINATES
     // LINE FORMAT: x, y, z, u, v, normalX, normalY, normalZ
-		-1.0f,  -1.0f,  0.0f,     0.0f, 0.0f,   0.0f, 0.0f, 0.0f,	  // 0
-		0.0f,   -1.0f,  1.0f,     0.5f, 0.0f,   0.0f, 0.0f, 0.0f,		// 1
-		1.0f,   -1.0f,  0.0f,     1.0f, 0.0f,   0.0f, 0.0f, 0.0f,		// 2
-		0.0f,   1.0f,   0.0f,     0.5f, 1.0f,   0.0f, 0.0f, 0.0f	  // 3
-	};
+    -1.0f,  -1.0f,  0.0f,     0.0f, 0.0f,   0.0f, 0.0f, 0.0f,	  // 0
+    0.0f,   -1.0f,  1.0f,     0.5f, 0.0f,   0.0f, 0.0f, 0.0f,		// 1
+    1.0f,   -1.0f,  0.0f,     1.0f, 0.0f,   0.0f, 0.0f, 0.0f,		// 2
+    0.0f,   1.0f,   0.0f,     0.5f, 1.0f,   0.0f, 0.0f, 0.0f	  // 3
+  };
 
-	unsigned int indices[] = {                                                                                  	// FOR INDEXED DRAW
-		0, 3, 1,
-		1, 3, 2,
-		2, 3, 0,
-		0, 1, 2
-	};
+  // FOR INDEXED DRAW
+  unsigned int indices[] = {                                                
+    0, 3, 1,
+    1, 3, 2,
+    2, 3, 0,
+    0, 1, 2
+  };
 
   // CREATING FLOOR FOR THE SCENE
   GLfloat floorVertices[] = {
@@ -133,13 +140,13 @@ void CreateObjects() {
 
   CalculateAverageNormals(indices, 12, vertices, 32, 8, 5);
 
-	Mesh *obj1 = new Mesh();
-	obj1->CreateMesh(vertices, indices, 32, 12);
-	meshList.push_back(obj1);
+  Mesh *obj1 = new Mesh();
+  obj1->CreateMesh(vertices, indices, 32, 12);
+  meshList.push_back(obj1);
 
-	Mesh *obj2 = new Mesh();
-	obj2->CreateMesh(vertices, indices, 32, 12);
-	meshList.push_back(obj2);
+  Mesh *obj2 = new Mesh();
+  obj2->CreateMesh(vertices, indices, 32, 12);
+  meshList.push_back(obj2);
 
   Mesh *obj3 = new Mesh();
   obj3->CreateMesh(floorVertices, floorIndices, 32, 6);
@@ -147,30 +154,37 @@ void CreateObjects() {
 }
 
 int main() {
-	mainWindow = MyWindow(1366, 768);                                                                        	    // CREATE WINDOW
-	mainWindow.Initialize();
+  // CREATE WINDOW
+  mainWindow = MyWindow(1366, 768);                                                                        	    
+  mainWindow.Initialize();
 
-	CreateObjects();                                                                                          	  // CALL FUNCTION TO CREATE OBJECT DATA
-	CreateShaders();                                                                                            	// ADD AND COMPILE SHADERS AND SHADER PROGRAM
+  // CALL FUNCTION TO CREATE OBJECT DATA
+  CreateObjects(); 
+  // ADD AND COMPILE SHADERS AND SHADER PROGRAM
+  CreateShaders();                                                                                            	
 
-	camera = Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 5.0f, 0.5f);        	// INITIALIZE CAMERA
+  // INITIALIZE CAMERA
+  camera = Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 5.0f, 0.5f);        	
 
-  brickTexture = Texture((char*)"Textures/brick.png");                                                          // INITIALIZE TEXTURES - PASS TEXTURE LOCATIONS AND LOAD TEXTURES
-  brickTexture.LoadTexture();
+  // INITIALIZE TEXTURES - PASS TEXTURE LOCATIONS AND LOAD TEXTURES
+  brickTexture = Texture((char*)"Textures/brick.png");                                                          
+  brickTexture.LoadTextureWithAlpha();
   dirtTexture = Texture((char*)"Textures/dirt.png");
-  dirtTexture.LoadTexture();
+  dirtTexture.LoadTextureWithAlpha();
   floorTexture = Texture((char*)"Textures/plain.png");
-  floorTexture.LoadTexture();
+  floorTexture.LoadTextureWithAlpha();
 
+  // INITIALIZE DIRECTIONAL LIGHT
   mainLight = DirectionalLight(1.0f, 1.0f, 1.0f, // r, g, b
-                                0.0f, 0.0f, // ambient, diffuse intensities
-                                0.0f, -1.0f, 0.0f); // xDir, yDir, zDir                                         // INITIALIZE DIRECTIONAL LIGHT
+                                1.0f, 0.0f, // ambient, diffuse intensities
+                                0.0f, -1.0f, 0.0f); // xDir, yDir, zDir                                         
 
+  // INITIALIZE POINT LIGHTS
   unsigned int pointLightCount = 0;
   pointLights[0] = PointLight(1.0f, 0.0f, 0.0f, 
                               1.0f, 0.1f, 
                               -4.0f, 2.0f, 0.0f, 
-                              0.3f, 0.1f, 0.1f);                                                                // INITIALIZE POINT LIGHTS
+                              0.3f, 0.1f, 0.1f);                                                                
   pointLightCount++;
   pointLights[1] = PointLight(0.0f, 1.0f, 0.0f,
                               1.0f, 0.1f,
@@ -178,50 +192,63 @@ int main() {
                               0.3f, 0.2f, 0.1f);
   pointLightCount++;
 
+  // INITIALIZE SPOT LIGHTS
   unsigned int spotLightCount = 0;
   spotLights[0] = SpotLight(0.0f, 0.0f, 1.0f,
                             0.0f, 1.0f,
                             0.0f, 0.0f, 0.0f,
                             0.0f,-1.0f, 0.0f,
                             0.3f, 0.2f, 0.1f,
-                            20.0f);                                                                           // INITIALIZE SPOT LIGHTS
+                            20.0f);                                                                           
   spotLightCount++;
   
-
+  // INITIALIZE MATERIALS
   shinyMat = Material(1.0f, 32);
   dullMat = Material(0.3f, 4);
 
-	glm::mat4 projectionMatrix = glm::perspective(45.0f, mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 100.0f);    	// CALCULATE PROJECTION MATRIX ONCE AND REUSE IN THE APPLICATION
+  // INITIALIZE MODELS
+  pottedPlant = MyModel();
+  pottedPlant.LoadModel("Models/indoor plant_02.obj");
 
-	GLuint uniformModel = 0, uniformProjection = 0, uniformView = 0, uniformEyePosition = 0,
-    uniformSpecularIntensity = 0, uniformShininess = 0;
-	
-	while (!mainWindow.GetShouldClose()) {                                                                         // LOOP UNTIL WINDOW CLOSES
-		GLfloat now = glfwGetTime();                                                                                 // CALCULATE DELTA TIME
-		deltaTime = now - lastTime;
-		lastTime = now;
+  // CALCULATE PROJECTION MATRIX ONCE AND REUSE IN THE APPLICATION
+  glm::mat4 projectionMatrix = glm::perspective(45.0f, mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 100.0f);    	
 
-		glfwPollEvents();                                                                                       		// GET AND HANDLE USER INPUT EVENTS
+  GLuint uniformModel = 0, uniformProjection = 0, uniformView = 0, uniformEyePosition = 0, uniformSpecularIntensity = 0, uniformShininess = 0;
+  
+  // LOOP UNTIL WINDOW CLOSES
+  while (!mainWindow.GetShouldClose()) {
+    // CALCULATE DELTA TIME
+    GLfloat now = glfwGetTime();                                                                                 
+    deltaTime = now - lastTime;
+    lastTime = now;
 
-		camera.KeyControl(mainWindow.getKeys(), deltaTime);
-		camera.MouseControl(mainWindow.getXChange(), mainWindow.getYChange());
+    // GET AND HANDLE USER INPUT EVENTS
+    glfwPollEvents();                                                                                       		
 
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);                                                                    		// CLEAR WINDOW
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    camera.KeyControl(mainWindow.getKeys(), deltaTime);
+    camera.MouseControl(mainWindow.getXChange(), mainWindow.getYChange());
 
-		shaderList[0]->UseShader();                                                                             		// USE SHADER PROGRAM
-		uniformModel = shaderList[0]->GetModelLocation();                                                           // GET UNIFORMS' LOCATIONS
-		uniformProjection = shaderList[0]->GetProjectionLocation();
-		uniformView = shaderList[0]->GetViewLocation();
+    // CLEAR WINDOW
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);                                                                    		
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // USE SHADER PROGRAM
+    shaderList[0]->UseShader();
+    // GET UNIFORMS' LOCATIONS
+    uniformModel = shaderList[0]->GetModelLocation();                                                           
+    uniformProjection = shaderList[0]->GetProjectionLocation();
+    uniformView = shaderList[0]->GetViewLocation();
     uniformEyePosition = shaderList[0]->GetEyePositionLocation();
     uniformSpecularIntensity = shaderList[0]->GetSpecularIntensityLocation();
     uniformShininess = shaderList[0]->GetShininessLocation();
 
-    glm::vec3 lowerLight = camera.GetCameraPosition();                                                          // CREATE FLASHLIGHT FROM CAMERA'S PERSPECTIVE
+    // CREATE FLASHLIGHT FROM CAMERA'S PERSPECTIVE
+    glm::vec3 lowerLight = camera.GetCameraPosition();                                                          
     lowerLight.y -= 0.3f;
     spotLights[0].SetFlash(lowerLight, camera.GetCameraDirection());                                            
 
-    //mainLight.UseLight(uniformAmbientIntensity, uniformAmbientColor, uniformDiffuseIntensity, uniformDirection);    // USE DIRECTIONAL LIGHT
+    // USE DIRECTIONAL LIGHT
+    //mainLight.UseLight(uniformAmbientIntensity, uniformAmbientColor, uniformDiffuseIntensity, uniformDirection);    
     shaderList[0]->SetDirectionalLight(&mainLight);
     shaderList[0]->SetPointLights(pointLights, pointLightCount);
     shaderList[0]->SetSpotLights(spotLights, spotLightCount);
@@ -230,40 +257,52 @@ int main() {
     glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.CalculateViewMatrix()));
     glUniform3f(uniformEyePosition, camera.GetCameraPosition().x, camera.GetCameraPosition().y, camera.GetCameraPosition().z);
 
-		// // BEGIN OBJECT 1 SECTION
-		glm::mat4 modelMatrix = glm::mat4(1.0f);                                                                		// INITIALIZE MODEL MATRIX AS IDENTITY AND TRANSFORM
+    // // BEGIN OBJECT 1 SECTION
+    // INITIALIZE MODEL MATRIX AS IDENTITY AND TRANSFORM
+    glm::mat4 modelMatrix = glm::mat4(1.0f);                                                                		
     modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, -2.5f));
     //modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f, 0.3f, 1.0f));
-		// // DEBUG PRINT glm::mat4
-		//std::cout << glm::to_string(modelMatrix) << std::endl;
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-		brickTexture.UseTexture();
+    // // DEBUG PRINT glm::mat4
+    //std::cout << glm::to_string(modelMatrix) << std::endl;
+    glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+    brickTexture.UseTexture();
     shinyMat.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		meshList[0]->RenderMesh();
-		// // END OBJECT 1 SECTION
-		
-		// // BEGIN OBJECT 2 SECTION
-		modelMatrix = glm::mat4(1.0f);
+    meshList[0]->RenderMesh();
+    // // END OBJECT 1 SECTION
+    
+    // // BEGIN OBJECT 2 SECTION
+    modelMatrix = glm::mat4(1.0f);
     modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 4.0f, -2.5f));
     //modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f, 0.3f, 1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+    glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(modelMatrix));
     dirtTexture.UseTexture();
     dullMat.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		meshList[1]->RenderMesh();
-		// // END OBJECT 2 SECTION
+    meshList[1]->RenderMesh();
+    // // END OBJECT 2 SECTION
 
     // // BEGIN OBJECT 3 SECTION
     modelMatrix = glm::mat4(1.0f);
     modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, -2.0f, 0.0f));
     glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-    dirtTexture.UseTexture();
-    dullMat.UseMaterial(uniformSpecularIntensity, uniformShininess);
+    floorTexture.UseTexture();
+    shinyMat.UseMaterial(uniformSpecularIntensity, uniformShininess);
     meshList[2]->RenderMesh();
     // // END OBJECT 3 SECTION
 
-		glUseProgram(0);                                                                                            // DETACH SHADER PROGRAM
-		mainWindow.SwapBuffers();                                                                               		// SWAP FRAMEBUFFER TO BE DRAWN
-	}
+    // // BEGIN OBJECT 4 SECTION
+    modelMatrix = glm::mat4(1.0f);
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, -2.0f, 0.0f));
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(0.001f, 0.001f, 0.001f));
+    glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+    shinyMat.UseMaterial(uniformSpecularIntensity, uniformShininess);
+    pottedPlant.RenderModel();
+    // // END OBJECT 4 SECTION
 
-	return 0;
+    // DETACH SHADER PROGRAM
+    glUseProgram(0);
+    // SWAP FRAMEBUFFER TO BE DRAWN
+    mainWindow.SwapBuffers();                                                                               		
+  }
+
+  return 0;
 }
